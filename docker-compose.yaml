@@ -1,0 +1,134 @@
+name: hadooplab
+
+services:
+  hadoop-master:
+    build:
+      context: ./hadoop
+    image: hadooplab/hadoop
+    container_name: hadoop-master
+    restart: unless-stopped
+    hostname: hadoop-master
+    environment:
+      MASTER: "hadoop-master"
+    command: ["/usr/local/bin/entrypoint-master.sh"]
+    expose:
+      - 9870          # HDFS NameNode UI
+      - 8088          # YARN ResourceManager UI
+      - 19888         # MapReduce JobHistory Server UI
+    volumes:
+      - hadooplab_hadoop_master_data:/volumes/data
+      - hadooplab_hadoop_master_logs:/volumes/logs
+      - hadooplab_hadoop_client_etc:/volumes/client/etc:ro
+    networks: [net]
+
+  hadoop-worker1:
+    build:
+      context: ./hadoop
+    image: hadooplab/hadoop
+    container_name: hadoop-worker1
+    depends_on: [hadoop-master]
+    restart: unless-stopped
+    hostname: hadoop-worker1
+    environment:
+      MASTER: "hadoop-master"
+    command: ["/usr/local/bin/entrypoint-worker.sh"]
+    expose:
+      - 9864          # HDFS DataNode UI
+      - 8042          # YARN NodeManager UI
+    volumes:
+      - hadooplab_hadoop_worker1_data:/volumes/data
+      - hadooplab_hadoop_worker1_logs:/volumes/logs
+      - hadooplab_hadoop_client_etc:/volumes/client/etc:ro
+    networks: [net]
+
+  hadoop-worker2:
+    build:
+      context: ./hadoop
+    image: hadooplab/hadoop
+    container_name: hadoop-worker2
+    depends_on: [hadoop-master]
+    restart: unless-stopped
+    hostname: hadoop-worker2
+    environment:
+      MASTER: "hadoop-master"
+    command: ["/usr/local/bin/entrypoint-worker.sh"]
+    expose:
+      - 9864          # HDFS DataNode UI
+      - 8042          # YARN NodeManager UI
+    volumes:
+      - hadooplab_hadoop_worker2_data:/volumes/data
+      - hadooplab_hadoop_worker2_logs:/volumes/logs
+      - hadooplab_hadoop_client_etc:/volumes/client/etc:ro
+    networks: [net]
+
+  hadoop-worker3:
+    build:
+      context: ./hadoop
+    image: hadooplab/hadoop
+    container_name: hadoop-worker3
+    depends_on: [hadoop-master]
+    restart: unless-stopped
+    hostname: hadoop-worker3
+    environment:
+      MASTER: "hadoop-master"
+    command: ["/usr/local/bin/entrypoint-worker.sh"]
+    expose:
+      - 9864          # HDFS DataNode UI
+      - 8042          # YARN NodeManager UI
+    volumes:
+      - hadooplab_hadoop_worker3_data:/volumes/data
+      - hadooplab_hadoop_worker3_logs:/volumes/logs
+      - hadooplab_hadoop_client_etc:/volumes/client/etc:ro
+    networks: [net]
+
+  hadoop-client:
+    build:
+      context: ./hadoop
+    image: hadooplab/hadoop
+    container_name: hadoop-client
+    restart: unless-stopped
+    hostname: hadoop-client
+    environment:
+      MASTER: "hadoop-master"
+    command: ["/usr/local/bin/entrypoint-client.sh"]
+    volumes:
+      - hadooplab_hadoop_client_home:/home
+      - hadooplab_hadoop_client_etc:/etc
+      - /bridge:/bridge
+    networks: [net]
+
+  nginx:
+    build:
+      context: ./nginx
+    image: hadooplab/nginx
+    container_name: nginx
+    depends_on: 
+      - hadoop-master
+      - hadoop-worker1
+      - hadoop-worker2
+      - hadoop-worker3
+    restart: unless-stopped
+    hostname: nginx
+    ports:
+      - 9870:9870     # HDFS NameNode UI
+      - 8088:8088     # YARN ResourceManager UI
+      - 19888:19888   # MapReduce JobHistory Server UI
+      - 9864:9864     # HDFS DataNode UI
+      - 8042:8042     # YARN NodeManager UI
+    networks: [net]
+
+volumes:
+  hadooplab_hadoop_master_data:
+  hadooplab_hadoop_master_logs:
+  hadooplab_hadoop_worker1_data:
+  hadooplab_hadoop_worker1_logs:
+  hadooplab_hadoop_worker2_data:
+  hadooplab_hadoop_worker2_logs:
+  hadooplab_hadoop_worker3_data:
+  hadooplab_hadoop_worker3_logs:
+  hadooplab_hadoop_client_home:
+  hadooplab_hadoop_client_etc:
+
+networks:
+  net:
+    driver: bridge
