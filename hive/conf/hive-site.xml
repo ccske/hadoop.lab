@@ -1,0 +1,41 @@
+<configuration>
+  <!-- Metastore DB -->
+  <property>
+    <name>javax.jdo.option.ConnectionURL</name>
+    <value>jdbc:postgresql://postgres:5432/metastore</value>
+  </property>
+  <property>
+    <name>javax.jdo.option.ConnectionDriverName</name>
+    <value>org.postgresql.Driver</value>
+  </property>
+  <property>
+    <name>javax.jdo.option.ConnectionUserName</name>
+    <value>hive</value>
+  </property>
+  <property>
+    <name>javax.jdo.option.ConnectionPassword</name>
+    <value>hive</value>
+  </property>
+
+  <!-- Warehouse dir on HDFS -->
+  <property>
+    <name>hive.metastore.warehouse.dir</name>
+    <value>/user/hive/warehouse</value>
+  </property>
+  <property>
+    <name>fs.defaultFS</name>
+    <value>hdfs://hadoop-master:8020</value>
+  </property>
+
+  <!-- Execution engine: Tez -->
+  <property>
+    <name>hive.execution.engine</name>
+    <value>tez</value>
+  </property>
+
+  <!-- Tez jars location on HDFS -->
+  <property>
+    <name>tez.lib.uris</name>
+    <value>${fs.defaultFS}/apps/tez/tez.tar.gz</value>
+  </property>
+</configuration>

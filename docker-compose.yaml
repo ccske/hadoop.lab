@@ -135,9 +135,40 @@ services:
     restart: unless-stopped
     hostname: postgres
     environment:
+      POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks: [net]
+
+  hive-metastore:
+    build:
+      context: ./hive
+    image: hadooplab/hive
+    contrainer_name: hive-metastore
+    depends_on:
+      hadoop-master:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    hostname: hive-metastore
+    command: ["/usr/local/bin/entrypoint-metastore.sh"]
+    networks: [net]
+
+  hive-server2:
+    build:
+      context: ./hive
+    image: hadooplab/hive
+    contrainer_name: hive-server2
+    depends_on:
+      hadoop-master:
+        condition: service_started
+      hive-metastore:
+        condition: service_started
+    restart: unless-stopped
+    hostname: hive-server2
+    command: ["/usr/local/bin/entrypoint-hiveserver2.sh"]
     networks: [net]
 
 volumes:

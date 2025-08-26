@@ -1,0 +1,9 @@
+# Hive warehouse
+hdfs dfs -mkdir -p /user/hive/warehouse
+hdfs dfs -chmod 1777 /user/hive/warehouse
+
+# Tez libraries
+hdfs dfs -mkdir -p /apps/tez
+hdfs dfs -put /opt/tez/tez.tar.gz /apps/tez/
+hdfs dfs -chmod 755 /apps/tez/tez.tar.gz
+
