@@ -127,6 +127,19 @@ services:
       - 8042:8042     # YARN NodeManager UI
     networks: [net]
 
+  postgres:
+    build:
+      context: ./postgres
+    image: hadooplab/postgres
+    container_name: postgres
+    restart: unless-stopped
+    hostname: postgres
+    environment:
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks: [net]
+
 volumes:
   global_conf:
   hadoop_master_data:
@@ -138,6 +151,7 @@ volumes:
   hadoop_worker3_data:
   hadoop_worker3_logs:
   hadoop_client_home:
+  postgres_data:
 
 networks:
   net:
