@@ -16,9 +16,9 @@ services:
       - 8088          # YARN ResourceManager UI
       - 19888         # MapReduce JobHistory Server UI
     volumes:
-      - hadooplab_global_conf:/volumes/conf
-      - hadooplab_hadoop_master_data:/volumes/data
-      - hadooplab_hadoop_master_logs:/volumes/logs
+      - global_conf:/volumes/conf
+      - hadoop_master_data:/volumes/data
+      - hadoop_master_logs:/volumes/logs
     networks: [net]
 
   hadoop-worker1:
@@ -26,7 +26,9 @@ services:
       context: ./hadoop
     image: hadooplab/hadoop
     container_name: hadoop-worker1
-    depends_on: [hadoop-master]
+    depends_on:
+      hadoop-master:
+        condition: service_started
     restart: unless-stopped
     hostname: hadoop-worker1
     environment:
@@ -36,9 +38,9 @@ services:
       - 9864          # HDFS DataNode UI
       - 8042          # YARN NodeManager UI
     volumes:
-      - hadooplab_global_conf:/volumes/conf
-      - hadooplab_hadoop_worker1_data:/volumes/data
-      - hadooplab_hadoop_worker1_logs:/volumes/logs
+      - global_conf:/volumes/conf
+      - hadoop_worker1_data:/volumes/data
+      - hadoop_worker1_logs:/volumes/logs
     networks: [net]
 
   hadoop-worker2:
@@ -46,7 +48,9 @@ services:
       context: ./hadoop
     image: hadooplab/hadoop
     container_name: hadoop-worker2
-    depends_on: [hadoop-master]
+    depends_on:
+      hadoop-master:
+        condition: service_started
     restart: unless-stopped
     hostname: hadoop-worker2
     environment:
@@ -56,9 +60,9 @@ services:
       - 9864          # HDFS DataNode UI
       - 8042          # YARN NodeManager UI
     volumes:
-      - hadooplab_global_conf:/volumes/conf
-      - hadooplab_hadoop_worker2_data:/volumes/data
-      - hadooplab_hadoop_worker2_logs:/volumes/logs
+      - global_conf:/volumes/conf
+      - hadoop_worker2_data:/volumes/data
+      - hadoop_worker2_logs:/volumes/logs
     networks: [net]
 
   hadoop-worker3:
@@ -66,7 +70,9 @@ services:
       context: ./hadoop
     image: hadooplab/hadoop
     container_name: hadoop-worker3
-    depends_on: [hadoop-master]
+    depends_on:
+      hadoop-master:
+        condition: service_started
     restart: unless-stopped
     hostname: hadoop-worker3
     environment:
@@ -76,9 +82,9 @@ services:
       - 9864          # HDFS DataNode UI
       - 8042          # YARN NodeManager UI
     volumes:
-      - hadooplab_global_conf:/volumes/conf
-      - hadooplab_hadoop_worker3_data:/volumes/data
-      - hadooplab_hadoop_worker3_logs:/volumes/logs
+      - global_conf:/volumes/conf
+      - hadoop_worker3_data:/volumes/data
+      - hadoop_worker3_logs:/volumes/logs
     networks: [net]
 
   hadoop-client:
@@ -92,8 +98,8 @@ services:
       MASTER: "hadoop-master"
     command: ["/usr/local/bin/entrypoint-client.sh"]
     volumes:
-      - hadooplab_global_conf:/volumes/conf
-      - hadooplab_hadoop_client_home:/home
+      - global_conf:/volumes/conf
+      - hadoop_client_home:/home
       - /bridge:/bridge
     networks: [net]
 
@@ -103,10 +109,14 @@ services:
     image: hadooplab/nginx
     container_name: nginx
     depends_on: 
-      - hadoop-master
-      - hadoop-worker1
-      - hadoop-worker2
-      - hadoop-worker3
+      hadoop-master:
+        condition: service_started
+      hadoop-worker1:
+        condition: service_started
+      hadoop-worker2:
+        condition: service_started
+      hadoop-worker3:
+        condition: service_started
     restart: unless-stopped
     hostname: nginx
     ports:
@@ -118,16 +128,16 @@ services:
     networks: [net]
 
 volumes:
-  hadooplab_global_conf:
-  hadooplab_hadoop_master_data:
-  hadooplab_hadoop_master_logs:
-  hadooplab_hadoop_worker1_data:
-  hadooplab_hadoop_worker1_logs:
-  hadooplab_hadoop_worker2_data:
-  hadooplab_hadoop_worker2_logs:
-  hadooplab_hadoop_worker3_data:
-  hadooplab_hadoop_worker3_logs:
-  hadooplab_hadoop_client_home:
+  global_conf:
+  hadoop_master_data:
+  hadoop_master_logs:
+  hadoop_worker1_data:
+  hadoop_worker1_logs:
+  hadoop_worker2_data:
+  hadoop_worker2_logs:
+  hadoop_worker3_data:
+  hadoop_worker3_logs:
+  hadoop_client_home:
 
 networks:
   net:
