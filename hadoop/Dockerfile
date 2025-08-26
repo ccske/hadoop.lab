@@ -4,6 +4,11 @@ ARG DEBIAN_FRONTEND=noninteractive
 ARG TARGETARCH
 ARG HADOOP_VERSION=3.4.0
 ENV HADOOP_HOME=/opt/hadoop
+ENV HADOOP_CONF_DIR=/etc/hadoop
+ENV HADOOP_LOG_DIR=/var/log/hadoop
+ENV HADOOP_VAR_DIR=/var/hadoop
+ENV HADOOP_PID_DIR=${HADOOP_VAR_DIR}/pid
+ENV HADOOP_TMP_DIR=${HADOOP_VAR_DIR}/tmp
 ENV PATH=${HADOOP_HOME}/bin:${HADOOP_HOME}/sbin:$PATH
 
 RUN apt-get update && \
@@ -28,11 +33,13 @@ RUN userdel -f -r ubuntu && \
     useradd -G supergroup -r -M yarn && \
     useradd -G supergroup -r -M mapred
 
-RUN mkdir -p ${HADOOP_HOME}/run ${HADOOP_HOME}/tmp /volumes/data /volumes/logs /bridge && \
-    chgrp supergroup ${HADOOP_HOME}/run ${HADOOP_HOME}/tmp /volumes/data /volumes/logs && \
-    chmod 775 ${HADOOP_HOME}/run ${HADOOP_HOME}/tmp /volumes/data /volumes/logs && \
-    ln -s /volumes/data ${HADOOP_HOME}/tmp/dfs && \
-    ln -s /volumes/logs ${HADOOP_HOME}/logs
+RUN mkdir -p ${HADOOP_PID_DIR} ${HADOOP_TMP_DIR} /volumes/conf /volumes/data /volumes/logs && \
+    chgrp supergroup ${HADOOP_PID_DIR} ${HADOOP_TMP_DIR} /volumes/data /volumes/logs && \
+    chmod -R 755 /volumes/conf && \
+    chmod -R 775 ${HADOOP_PID_DIR} ${HADOOP_TMP_DIR} /volumes/data /volumes/logs && \
+    ln -s /volumes/data ${HADOOP_TMP_DIR}/dfs && \
+    ln -s /volumes/logs ${HADOOP_LOG_DIR} && \
+    ln -s ${HADOOP_HOME}/etc/hadoop ${HADOOP_CONF_DIR}
 
 COPY etc/hadoop/* ${HADOOP_HOME}/etc/hadoop/
 COPY entrypoint/* /usr/local/bin/

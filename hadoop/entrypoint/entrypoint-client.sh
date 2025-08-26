@@ -2,37 +2,27 @@
 
 set -euo pipefail
 
-function wait_for_up() {
-    local HOST_PORT=$1
-    local HOST=${HOST_PORT%%:*}
-    local PORT=${HOST_PORT#*:}
-    local MAX_RETRIES=60
-    local SLEEP_INTERVAL=3
-    let i=1
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
+source "${SCRIPT_DIR}/common.sh"
 
-    while (( $i <= ${MAX_RETRIES} )); do
-        echo "[$i/${MAX_RETRIES}] waiting for $HOST:$PORT up..."
-        nc -z $HOST $PORT
-        if [[ $? -eq 0 ]]; then
-            break
-        fi
-        sleep ${SLEEP_INTERVAL}
-        i=$((i + 1))
+GLOBAL_CONF_DIR=/volumes/conf
+if wait_until_file_created "${GLOBAL_CONF_DIR}/hadoop" && [ -d "${GLOBAL_CONF_DIR}/hadoop" ]; then
+    for FPATH in "${GLOBAL_CONF_DIR}"/hadoop/*; do
+        FILE=$(basename "$FPATH")
+        rm -f ${HADOOP_CONF_DIR}/$FILE || true
+        ln -s ${GLOBAL_CONF_DIR}/hadoop/$FILE ${HADOOP_CONF_DIR}/$FILE
     done
+else
+    echo "WARNING: Global conf not found! Apply default settings."
+fi
 
-    if (( $i > ${MAX_RETRIES} )); then
-        echo "$HOST:$PORT is still not available!"
-        return 1
-    fi
+if [ -f "${GLOBAL_CONF_DIR}/group" ] && [ -f "${GLOBAL_CONF_DIR}/passwd" ]; then
+    restore_supergroup_users "${GLOBAL_CONF_DIR}/group" "${GLOBAL_CONF_DIR}/passwd"
+fi
 
-    echo "$HOST:$PORT is up."
-    return 0
-}
+JAVA_HOME="$(dirname "$(dirname "$(readlink -f "$(which java)")")")"
 
-export JAVA_HOME="$(dirname "$(dirname "$(readlink -f "$(which java)")")")"
-export PATH=${HADOOP_HOME}/bin:$PATH
-
-wait_for_up "$MASTER:8020" || exit 1
+wait_until_service_up "$MASTER" "8020" || exit 1
 
 echo "Hadoop client started."
 

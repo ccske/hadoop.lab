@@ -16,9 +16,9 @@ services:
       - 8088          # YARN ResourceManager UI
       - 19888         # MapReduce JobHistory Server UI
     volumes:
+      - hadooplab_global_conf:/volumes/conf
       - hadooplab_hadoop_master_data:/volumes/data
       - hadooplab_hadoop_master_logs:/volumes/logs
-      - hadooplab_hadoop_client_etc:/volumes/client/etc:ro
     networks: [net]
 
   hadoop-worker1:
@@ -36,9 +36,9 @@ services:
       - 9864          # HDFS DataNode UI
       - 8042          # YARN NodeManager UI
     volumes:
+      - hadooplab_global_conf:/volumes/conf
       - hadooplab_hadoop_worker1_data:/volumes/data
       - hadooplab_hadoop_worker1_logs:/volumes/logs
-      - hadooplab_hadoop_client_etc:/volumes/client/etc:ro
     networks: [net]
 
   hadoop-worker2:
@@ -56,9 +56,9 @@ services:
       - 9864          # HDFS DataNode UI
       - 8042          # YARN NodeManager UI
     volumes:
+      - hadooplab_global_conf:/volumes/conf
       - hadooplab_hadoop_worker2_data:/volumes/data
       - hadooplab_hadoop_worker2_logs:/volumes/logs
-      - hadooplab_hadoop_client_etc:/volumes/client/etc:ro
     networks: [net]
 
   hadoop-worker3:
@@ -76,9 +76,9 @@ services:
       - 9864          # HDFS DataNode UI
       - 8042          # YARN NodeManager UI
     volumes:
+      - hadooplab_global_conf:/volumes/conf
       - hadooplab_hadoop_worker3_data:/volumes/data
       - hadooplab_hadoop_worker3_logs:/volumes/logs
-      - hadooplab_hadoop_client_etc:/volumes/client/etc:ro
     networks: [net]
 
   hadoop-client:
@@ -92,8 +92,8 @@ services:
       MASTER: "hadoop-master"
     command: ["/usr/local/bin/entrypoint-client.sh"]
     volumes:
+      - hadooplab_global_conf:/volumes/conf
       - hadooplab_hadoop_client_home:/home
-      - hadooplab_hadoop_client_etc:/etc
       - /bridge:/bridge
     networks: [net]
 
@@ -118,6 +118,7 @@ services:
     networks: [net]
 
 volumes:
+  hadooplab_global_conf:
   hadooplab_hadoop_master_data:
   hadooplab_hadoop_master_logs:
   hadooplab_hadoop_worker1_data:
@@ -127,7 +128,6 @@ volumes:
   hadooplab_hadoop_worker3_data:
   hadooplab_hadoop_worker3_logs:
   hadooplab_hadoop_client_home:
-  hadooplab_hadoop_client_etc:
 
 networks:
   net:

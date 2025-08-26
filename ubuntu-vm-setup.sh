@@ -80,21 +80,28 @@ if ! sg docker -c "docker exec hadoop-client getent passwd $USER" > /dev/null 2>
         sg docker -c "docker exec $CONTAINER groupadd -g ${GROUP_ID} $GROUP"
         sg docker -c "docker exec $CONTAINER useradd -u ${USER_ID} -g $GROUP -G supergroup -d /home/$USER -s /bin/bash $USER"
     done
+    sg docker -c "docker exec hadoop-client cp /etc/group /etc/passwd /volumes/conf/"
+    sg docker -c "dicker exec hadoop-client rm -f /home/$USER" > /dev/null 2>&1 || true
     sg docker -c "docker exec hadoop-client ln -s /bridge /home/$USER"
-    MAX_RETRIES=10
-    SLEEP_INTERVAL=3
-    let i=1
-    while (( $i <= ${MAX_RETRIES} )); do
+    TIMEOUT=60
+    SLEEP_INTERVAL=1
+    START_TIME=$(date +%s)
+    CURRENT_TIME=${START_TIME}
+    (( TIMEOUT_TIME = START_TIME + TIMEOUT ))
+    while (( CURRENT_TIME <= TIMEOUT_TIME )); do
         if sg docker -c "docker exec hadoop-client gosu $USER:$GROUP hdfs dfs -mkdir -p /user/$USER" > /dev/null 2>&1; then
             break
         fi
         sleep ${SLEEP_INTERVAL}
-        i=$((i + 1))
+        CURRENT_TIME=$(date +%s)
+        (( ELAPSED = CURRENT_TIME - START_TIME ))
+        echo "[$ELAPSED/$TIMEOUT] waiting for /user/$USER to be created on HDFS..."
     done
-    if (( $i > ${MAX_RETRIES} )); then
-        echo "Failed to create /user/$USER directory on hdfs!"
-        exit
+    if (( CURRENT_TIME > TIMEOUT_TIME )); then
+        echo "Failed to create /user/$USER on HDFS!"
+        exit 1
     fi
+    echo "/user/$USER successdully created on HDFS."
 fi
 HADOOP_BIN="/opt/hadoop/bin"
 HADOOP_CLIENT_ALIAS="alias hadoop-client='docker exec -it hadoop-client su - $USER'"
