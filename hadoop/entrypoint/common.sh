@@ -42,7 +42,7 @@ function wait_until_service_up() {
 function wait_until_file_created() {
     local file=$1
     local timeout=60
-    local sleep_interval=1
+    local sleep_interval=3
     local start_time=$(date +%s)
     local current_time=${start_time}
 

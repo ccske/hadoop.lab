@@ -83,8 +83,8 @@ if ! sg docker -c "docker exec hadoop-client getent passwd $USER" > /dev/null 2>
     sg docker -c "docker exec hadoop-client cp /etc/group /etc/passwd /volumes/conf/"
     sg docker -c "dicker exec hadoop-client rm -f /home/$USER" > /dev/null 2>&1 || true
     sg docker -c "docker exec hadoop-client ln -s /bridge /home/$USER"
-    TIMEOUT=60
-    SLEEP_INTERVAL=1
+    TIMEOUT=180
+    SLEEP_INTERVAL=3
     START_TIME=$(date +%s)
     CURRENT_TIME=${START_TIME}
     (( TIMEOUT_TIME = START_TIME + TIMEOUT ))
